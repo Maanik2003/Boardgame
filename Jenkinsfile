@@ -1,33 +1,13 @@
 pipeline {
     agent any
-
-    tools {
-        maven 'maven3.6'
-        jdk 'jdk17'
-    }
-
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'prod', url: 'https://github.com/Maanik2003/Boardgame.git'
-            }
-        }
-
-        stage('Compile') {
-            steps {
-                sh 'mvn compile'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                sh 'mvn package'
+                git(
+                    branch: 'prod',
+                    credentialsId: 'git-cred',
+                    url: 'https://github.com/Maanik2003/Boardgame.git'
+                )
             }
         }
     }
