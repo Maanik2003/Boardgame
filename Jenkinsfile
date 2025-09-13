@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven3'   // Yeh wahi name hona chahiye jo Jenkins Global Tool Config me diya hai
+        maven 'maven3'   // Jenkins Global Tool Config me yahi name hona chahiye
     }
 
     stages {
@@ -24,6 +24,29 @@ pipeline {
             steps {
                 sh 'mvn test'
             }
+        }
+
+        stage('Verify Trivy Installation') {
+            steps {
+                echo 'Checking Trivy installation on Jenkins agent...'
+                sh 'which trivy'
+                sh 'trivy --version'
+            }
+        }
+
+        stage('File System Scan by Trivy') {
+            steps {
+                echo 'Trivy Scan Started'
+                // Output both to console and file
+                sh 'trivy fs --format table . | tee trivy-filescanproject-output.txt'
+            }
+        }
+    }
+
+    post {
+        always {
+            // Archive Trivy report so it is visible in Jenkins UI
+            archiveArtifacts artifacts: 'trivy-filescanproject-output.txt', allowEmptyArchive: true
         }
     }
 }
