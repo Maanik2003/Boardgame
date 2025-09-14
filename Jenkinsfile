@@ -2,15 +2,22 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven3'   // Jenkins Global Tool Config me yahi name hona chahiye
+        maven 'maven3'   // Jenkins Global Tool Config must have this name
+    }
+
+    environment {
+        // Set Git credentials ID for push
+        GIT_CREDENTIALS = 'git-cred'
+        GIT_BRANCH = 'prod'
+        REPO_URL = 'https://github.com/Maanik2003/Boardgame.git'
     }
 
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'prod',
-                    credentialsId: 'git-cred',
-                    url: 'https://github.com/Maanik2003/Boardgame.git'
+                git branch: "${GIT_BRANCH}",
+                    credentialsId: "${GIT_CREDENTIALS}",
+                    url: "${REPO_URL}"
             }
         }
 
@@ -44,9 +51,10 @@ pipeline {
 
         stage('Sonar Analysis') {
             steps {
-                withSonarQubeEnv('sonar') {   // 'sonar' must match Jenkins SonarQube server config
+                withSonarQubeEnv('sonar') {
+                    // Use tool installed in PATH or configured in Jenkins
                     sh '''
-                        $SCANNER_HOME/bin/sonar-scanner \
+                        sonar-scanner \
                         -Dsonar.projectKey=BoardGame \
                         -Dsonar.projectName=BoardGame \
                         -Dsonar.java.binaries=. \
@@ -55,11 +63,11 @@ pipeline {
                 }
             }
         }
-    }
+
 
     post {
         always {
-            // Archive Trivy report so it is visible in Jenkins UI
+            // Archive Trivy report so it's visible in Jenkins UI
             archiveArtifacts artifacts: 'trivy-filescanproject-output.txt', allowEmptyArchive: true
         }
     }
