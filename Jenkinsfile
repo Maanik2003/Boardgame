@@ -41,6 +41,20 @@ pipeline {
                 sh 'trivy fs --format table . | tee trivy-filescanproject-output.txt'
             }
         }
+
+        stage('Sonar Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {   // 'sonar' must match Jenkins SonarQube server config
+                    sh '''
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectKey=BoardGame \
+                        -Dsonar.projectName=BoardGame \
+                        -Dsonar.java.binaries=. \
+                        -Dsonar.exclusions=**/trivy-filescanproject-output.txt
+                    '''
+                }
+            }
+        }
     }
 
     post {
